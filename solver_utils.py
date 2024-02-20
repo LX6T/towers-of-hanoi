@@ -32,8 +32,21 @@ def value_iteration(
     q_table: tm.QTable = {}
     # noinspection PyUnusedLocal
     max_delta = 0.0
-    # *** BEGIN OF YOUR CODE ***
-    # ***  END OF YOUR CODE  ***
+    for state in mdp.nonterminal_states:  
+        for action in mdp.actions:  
+            q_value = 0
+            # Iterating over possible next states. The actual mechanism for obtaining these needs to be implemented.
+            for next_state in mdp.step(state, action):  # Placeholder, adjust to actual method
+                transition_prob = mdp.transition(state, action, next_state)
+                reward = mdp.reward(state, action, next_state)
+                q_value += transition_prob * (reward + mdp.config.gamma * v_table[next_state])
+            
+            q_table[(state, action)] = q_value
+            
+            if new_v_table[state] < q_value:
+                delta = abs(new_v_table[state] - q_value)
+                new_v_table[state] = q_value
+                max_delta = max(max_delta, delta)
     return new_v_table, q_table, max_delta
 
 
