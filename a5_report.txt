@@ -6,6 +6,14 @@ Email: ashfen6@uw.edu and apul710@uw.edu
 The value iteration algorithm uses the Bellman equations by iteratively updating the value of each state until it converges.
 For each iteration, the algorithm will update the value table by considering the immediate reward plus the discounted value of the next state for every action.
 It will continue to do this until the function converges and the optimal policy can be found by selecting the action that maximizes the value for each state according to the final value table.
+
 2. How did you decide your custom epsilon function? What thoughts went into that and what would you change to further optimize your exploration? If your function was strong, explain why. (5 points)
+We want the epsilon to gradually reduce as n increases, since our estimates of the value of each action get more accurate over time.
+For high n, we should be fairly confident that the best action is the one that we think it is, and so have a smaller epsilon -> less likely not to pick the best action.
+We decided on a simple linear function for epsilon, decreasing from 1 to 0 between n=1 and n=10000 at a constant rate.
+This has the properties we want for epsilon, large for small n with low confidence in action values, and small for high n with high confidence in action values.
+To optimise further we might try lowering the starting epsilon below 1 and seeing if we can get faster convergence while still achieving the optimal solution.
 
 3. What is another exploration strategy other than epsilon-greedy that you believe would fit well with the Towers of Hanoi formulation? Why? (5 points)
+Could choose actions with probabilities weighted proportional to their current estimated values.
+Then good actions would be chosen more often, and bad actions ignored more and more over time until convergence occurs.

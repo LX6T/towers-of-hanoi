@@ -77,13 +77,6 @@ class Tracker(object):
         self.muted = False
 
         self.gs_output = gs_output
-        tz = zoneinfo.ZoneInfo("America/Los_Angeles")
-        started_at = datetime.datetime.now(tz)
-        early_bird_due = datetime.datetime(
-            2021, 5, 10, hour=23, minute=59, tzinfo=tz)
-        self.early_bird = started_at <= early_bird_due
-        self.early_bird_bonus = 5
-        print('\nStarted at %d:%02d:%02d' % started_at.timetuple()[3:6])
 
     def mute(self):
         if self.muted:

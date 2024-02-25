@@ -1,3 +1,7 @@
+# Partnership? YES
+# Submitting partner: Alex Pullen
+# Other partner: Ashley Fenton
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 from typing import Tuple, Callable, List
@@ -32,42 +36,43 @@ def value_iteration(
     q_table: tm.QTable = {}
     # noinspection PyUnusedLocal
     max_delta = 0.0
-    #Iterating over all states in the mdp
+    # Iterating over all states in the mdp
     for state in mdp.all_states:
-        #Skipping the terminal state because its value is predefined and doesn't change
+        # Skipping the terminal state because its value is predefined and doesn't change
         if state == mdp.terminal:
             continue
 
-        #Initializing maximum Q-value for the current state to negative infinity to ensure any real Q-value found will be larger
+        # Initializing maximum Q-value for the current state to negative infinity
+        # to ensure any real Q-value found will be larger
         max_q_value = float('-inf')
-        #Iterating over all possible actions in the MDP
+        # Iterating over all possible actions in the MDP
         for action in mdp.actions:
             q_value = 0.0
-            #Iterating over all potential next states resulting from taking the action
+            # Iterating over all potential next states resulting from taking the action
             for next_state in mdp.all_states:
-                #Calculating the probability of transitioning from the current state to the next state 
+                # Calculating the probability of transitioning from the current state to the next state
                 transition_prob = mdp.transition(state, action, next_state)
-                #Calculating the reward received of transitioning from the current state to the next state
+                # Calculating the reward received of transitioning from the current state to the next state
                 reward = mdp.reward(state, action, next_state)
-                #Updating the Q-value for the current state-action pair 
+                # Updating the Q-value for the current state-action pair
                 q_value += transition_prob * (reward + mdp.config.gamma * v_table.get(next_state, 0))
 
-            #Storing the computed Q-value in the Q-table
+            # Storing the computed Q-value in the Q-table
             q_table[(state, action)] = q_value
 
-            #Updating max_q_value if this action's Q-value is higher than any previously considered action
+            # Updating max_q_value if this action's Q-value is higher than any previously considered action
             if q_value > max_q_value:
                 max_q_value = q_value
 
-        #Updating the V-table with the maximum Q-value found for this state
+        # Updating the V-table with the maximum Q-value found for this state
         new_v_table[state] = max_q_value
 
-        #Calculating delta for this state 
+        # Calculating delta for this state
         delta = abs(v_table.get(state, 0) - max_q_value)
-        #Updating max_delta if this state's delta is the largest seen so far
+        # Updating max_delta if this state's delta is the largest seen so far
         max_delta = max(max_delta, delta)
 
-    #Ensuring terminal state value is correctly set in the new V-table
+    # Ensuring terminal state value is correctly set in the new V-table
     new_v_table[mdp.terminal] = 0
     return new_v_table, q_table, max_delta
 
@@ -110,6 +115,10 @@ def q_update(
     """
     state, action, reward, next_state = transition
     # *** BEGIN OF YOUR CODE ***
+    next_state_values = [q_table[t] for t in q_table if t[0] == next_state]
+    q_table[(state, action)] = (1-alpha) * q_table[(state, action)] + alpha * reward
+    if len(next_state_values) > 0:
+        q_table[(state, action)] += alpha * mdp.config.gamma * max(next_state_values)
 
 
 def extract_v_table(mdp: tm.TohMdp, q_table: tm.QTable) -> tm.VTable:
@@ -124,6 +133,10 @@ def extract_v_table(mdp: tm.TohMdp, q_table: tm.QTable) -> tm.VTable:
             The extracted value table.
     """
     # *** BEGIN OF YOUR CODE ***
+    v_table: tm.VTable = {}
+    for t in q_table.keys():
+        v_table[t[0]] = max((v_table[t[0]] if t[0] in v_table.keys() else float("-inf")), q_table[t])
+    return v_table
 
 
 def choose_next_action(
@@ -157,6 +170,15 @@ def choose_next_action(
             The chosen action.
     """
     # *** BEGIN OF YOUR CODE ***
+    best_actions = []
+    min_value = float("-inf")
+    for t in q_table.keys():
+        if t[0] == state and q_table[t] > min_value:
+            best_actions = [t[1]]
+            min_value = q_table[t]
+        elif t[0] == state and q_table[t] == min_value:
+            best_actions.append(t[1])
+    return epsilon_greedy(best_actions, epsilon)
 
 
 def custom_epsilon(n_step: int) -> float:
@@ -172,7 +194,7 @@ def custom_epsilon(n_step: int) -> float:
             epsilon value when choosing the nth step.
     """
     # *** BEGIN OF YOUR CODE ***
-
+    return 1 - 0.0001 * n_step
 
 def custom_alpha(n_step: int) -> float:
     """Calculates the alpha value for the nth Q learning step.
